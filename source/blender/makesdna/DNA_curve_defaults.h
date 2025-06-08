@@ -19,6 +19,7 @@
     .texspace_size = {1, 1, 1}, \
     .flag = CU_DEFORM_BOUNDS_OFF | CU_PATH_RADIUS, \
     .pathlen = 100, \
+    .sampling_method = CU_MAP_FIXED, \
     .resolu = 12, \
     .resolv = 12, \
     .offset = 0.0, \

@@ -81,6 +81,8 @@ class DATA_PT_shape_curve(CurveButtonsPanel, Panel):
 
         layout.use_property_split = True
 
+        layout.prop(curve, "sampling_method", text="Geometry Mapping")
+
         col = layout.column()
         sub = col.column(align=True)
         sub.prop(curve, "resolution_u", text="Resolution Preview U")
