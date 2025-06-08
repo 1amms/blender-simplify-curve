@@ -22,6 +22,8 @@
     .sampling_method = CU_MAP_FIXED, \
     .resolu = 12, \
     .resolv = 12, \
+    .factu = 0.0f, \
+    .factu_ren = 0.0f, \
     .offset = 0.0, \
     .wordspace = 1.0, \
     .spacing = 1.0f, \

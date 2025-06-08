@@ -81,18 +81,59 @@ class DATA_PT_shape_curve(CurveButtonsPanel, Panel):
 
         layout.use_property_split = True
 
-        layout.prop(curve, "sampling_method", text="Geometry Mapping")
+        if not is_surf:
+            layout.prop(curve, "sampling_method", text="Geometry Mapping")
+        else:
+            pass #RDP doesn't support surfaces, only curves.
 
         col = layout.column()
         sub = col.column(align=True)
-        sub.prop(curve, "resolution_u", text="Resolution Preview U")
+
+        sampling_method = curve.sampling_method
+
+        # if is_surf:
+        #     sub.prop(curve, "resolution_u", text="Resolution Preview U")
+        #     sub.prop(curve, "resolution_v", text="V")
+        # else:
+        #     if sampling_method == 'FIXED':
+        #         sub.prop(curve, "resolution_u", text="resolution preview u")
+        #     if sampling_method == 'ADAPTIVE':
+        #         sub.prop(curve, "resolution_factor_u", text="factor preview u", slider=True)
+
+        # sub = col.column(align=True)
+        # if is_surf:
+        #     sub.prop(curve, "render_resolution_u", text="Render U")
+        #     sub.prop(curve, "render_resolution_v", text="V")
+        # else:
+        #     if sampling_method == 'FIXED':
+        #         sub.prop(curve, "render_resolution_u", text="Resolution Render U")
+        #     if sampling_method == 'ADAPTIVE':
+        #         sub.prop(curve, "render_resolution_factor_u", text="Factor Render U", slider=True)
+
         if is_surf:
+            sub = col.column(align=True)
+            sub.prop(curve, "resolution_u", text="Resolution Preview U")
             sub.prop(curve, "resolution_v", text="V")
 
-        sub = col.column(align=True)
-        sub.prop(curve, "render_resolution_u", text="Render U")
-        if is_surf:
+            sub = col.column(align=True)
+            sub.prop(curve, "render_resolution_u", text="Render U")
             sub.prop(curve, "render_resolution_v", text="V")
+
+        else:
+            if sampling_method == 'FIXED':
+                sub = col.column(align=True)
+                sub.prop(curve, "resolution_u", text="Resolution Preview U")
+
+                sub = col.column(align=True)
+                sub.prop(curve, "render_resolution_u", text="Resolution Render U")
+
+            elif sampling_method == 'ADAPTIVE':
+                sub = col.column(align=True)
+                sub.prop(curve, "resolution_factor_u", text="Factor Preview U", slider=True)
+
+                sub = col.column(align=True)
+                sub.prop(curve, "render_resolution_factor_u", text="Factor Render U", slider=True)
+
         col.separator()
 
         if is_curve:

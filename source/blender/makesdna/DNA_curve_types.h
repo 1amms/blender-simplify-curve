@@ -247,6 +247,7 @@ typedef struct Curve {
   short bevresol, totcol;
   int flag;
   float offset, extrude, bevel_radius;
+  float factu, factu_ren;
 
   /* default */
   short resolu, resolv;

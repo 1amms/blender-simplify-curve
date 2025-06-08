@@ -1747,17 +1747,17 @@ static void rna_def_curve(BlenderRNA *brna)
   RNA_def_property_ui_text(prop, "Sampling Method", "Mode of curve sampling");
   RNA_def_property_update(prop, 0, "rna_Curve_update_data");
   RNA_def_property_enum_default(prop, CU_MAP_FIXED); 
-  RNA_def_property_flag(prop, PROP_ANIMATABLE);
+  RNA_def_property_clear_flag(prop, PROP_ANIMATABLE);
 
   prop = RNA_def_property(srna, "resolution_factor_u", PROP_FLOAT, PROP_NONE);
   RNA_def_property_float_sdna(prop, nullptr, "factu");
   RNA_def_property_clear_flag(prop, PROP_ANIMATABLE);
-  RNA_def_property_range(prop, 0.0f, 1024.0f); 
+  RNA_def_property_range(prop, 0.0f, 5.0f); 
   RNA_def_property_ui_range(prop, 0.0f, 5.0f, 0.1f, 2);
   RNA_def_property_ui_text(
       prop,
       "Factor U",
-      "Factor of U Simplification");
+      "Factor for U surface simplification");
   RNA_def_property_update(prop, 0, "rna_Curve_resolution_u_update_data");
 
   prop = RNA_def_property(srna, "resolution_u", PROP_INT, PROP_NONE);
@@ -1781,6 +1781,17 @@ static void rna_def_curve(BlenderRNA *brna)
       "Resolution V",
       "The number of computed points in the V direction between every pair of control points");
   RNA_def_property_update(prop, 0, "rna_Curve_resolution_v_update_data");
+
+  prop = RNA_def_property(srna, "render_resolution_factor_u", PROP_FLOAT, PROP_NONE);
+  RNA_def_property_float_sdna(prop, nullptr, "factu_ren");
+  RNA_def_property_clear_flag(prop, PROP_ANIMATABLE);
+  RNA_def_property_range(prop, 0.0f, 5.0f);
+  RNA_def_property_ui_range(prop, 0.0f, 5.0f, 0.1f, 2);
+  RNA_def_property_ui_text(
+      prop,
+      "Render Factor U",
+      "Factor for U surface simplification used during rendering");
+  RNA_def_property_update(prop, 0, "rna_Curve_resolution_u_update_data");
 
   prop = RNA_def_property(srna, "render_resolution_u", PROP_INT, PROP_NONE);
   RNA_def_property_int_sdna(prop, nullptr, "resolu_ren");
