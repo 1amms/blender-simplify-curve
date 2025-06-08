@@ -1588,6 +1588,20 @@ static void rna_def_curve(BlenderRNA *brna)
       {0, nullptr, 0, nullptr, nullptr},
   };
 
+  static const EnumPropertyItem curve_sampling_method_items[] = {
+      {CU_MAP_FIXED,
+       "FIXED",
+       0,
+       "Fixed",
+       "Map the geometry factor to the number of subdivisions of a spline (U resolution)"},
+      {CU_MAP_ADAPTIVE,
+       "ADAPTIVE",
+       0,
+       "Adaptive",
+       "Map the geometry factor adaptively using RDP-based simplification (U resolution)"},
+      {0, nullptr, 0, nullptr, nullptr},
+  };
+
   static const EnumPropertyItem bevfac_mapping_items[] = {
       {CU_BEVFAC_MAP_RESOLU,
        "RESOLUTION",
@@ -1726,6 +1740,25 @@ static void rna_def_curve(BlenderRNA *brna)
   RNA_def_property_ui_text(
       prop, "Bevel Depth", "Radius of the bevel geometry, not including extrusion");
   RNA_def_property_update(prop, 0, "rna_Curve_update_data");
+
+  prop = RNA_def_property(srna, "sampling_method", PROP_ENUM, PROP_NONE);
+  RNA_def_property_enum_sdna(prop, nullptr, "sampling_method");
+  RNA_def_property_enum_items(prop, curve_sampling_method_items);
+  RNA_def_property_ui_text(prop, "Sampling Method", "Mode of curve sampling");
+  RNA_def_property_update(prop, 0, "rna_Curve_update_data");
+  RNA_def_property_enum_default(prop, CU_MAP_FIXED); 
+  RNA_def_property_flag(prop, PROP_ANIMATABLE);
+
+  prop = RNA_def_property(srna, "resolution_factor_u", PROP_FLOAT, PROP_NONE);
+  RNA_def_property_float_sdna(prop, nullptr, "factu");
+  RNA_def_property_clear_flag(prop, PROP_ANIMATABLE);
+  RNA_def_property_range(prop, 0.0f, 1024.0f); 
+  RNA_def_property_ui_range(prop, 0.0f, 5.0f, 0.1f, 2);
+  RNA_def_property_ui_text(
+      prop,
+      "Factor U",
+      "Factor of U Simplification");
+  RNA_def_property_update(prop, 0, "rna_Curve_resolution_u_update_data");
 
   prop = RNA_def_property(srna, "resolution_u", PROP_INT, PROP_NONE);
   RNA_def_property_int_sdna(prop, nullptr, "resolu");

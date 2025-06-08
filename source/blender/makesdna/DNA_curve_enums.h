@@ -42,6 +42,12 @@ enum {
   CU_MAP_TAPER = 1 << 15,
 };
 
+/* Curve_sampling_method */
+enum {
+  CU_MAP_FIXED = 0,
+  CU_MAP_ADAPTIVE = 1,
+};
+
 /** #Curve.twist_mode */
 enum {
   CU_TWIST_Z_UP = 0,

@@ -310,6 +310,10 @@ typedef struct Curve {
   char _pad2[6];
   float fsize_realtime;
 
+  /* Geometry sampling method, dropdown for swapping between fixed and RDP simplification */
+  char sampling_method;
+  char _pad4[7];
+
   /**
    * A pointer to curve data from evaluation. Owned by the object's #geometry_set_eval, either as a
    * geometry instance or the data of the evaluated #CurveComponent. The curve may also contain
