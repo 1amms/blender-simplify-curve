@@ -12,6 +12,7 @@
 
 #include "BKE_attribute_math.hh"
 #include "BKE_curves.hh"
+#include "BKE_curve_simplify.hh"
 
 namespace blender::bke::curves::bezier {
 
@@ -280,7 +281,8 @@ void calculate_evaluated_positions(const Span<float3> positions,
                                    const Span<float3> handles_left,
                                    const Span<float3> handles_right,
                                    const OffsetIndices<int> evaluated_offsets,
-                                   MutableSpan<float3> evaluated_positions)
+                                   MutableSpan<float3> evaluated_positions,
+                                   bool cyclic)  // <— This line was missing
 {
   BLI_assert(evaluated_offsets.total_size() == evaluated_positions.size());
   if (evaluated_offsets.total_size() == 1) {
@@ -326,6 +328,24 @@ void calculate_evaluated_positions(const Span<float3> positions,
                      positions.first(),
                      evaluated_positions.slice(last_segment_points));
   }
+
+  using namespace blender;
+
+  Array<bool> points_to_delete(evaluated_positions.size(), false);
+  curve_simplify(evaluated_positions.as_span(), cyclic, 0.001f, points_to_delete);
+
+  Vector<float3> simplified_positions;
+  simplified_positions.reserve(evaluated_positions.size());
+  for (int i = 0; i < evaluated_positions.size(); i++) {
+    if (!points_to_delete[i]) {
+      simplified_positions.append(evaluated_positions[i]);
+    }
+  }
+
+  BLI_assert(simplified_positions.size() <= evaluated_positions.size());
+  for (int i = 0; i < simplified_positions.size(); i++) {
+    evaluated_positions[i] = simplified_positions[i];
+  }
 }
 
 template<typename T>
@@ -364,6 +384,8 @@ static void interpolate_to_evaluated(const Span<T> src,
   const IndexRange last_segment = evaluated_offsets[src.index_range().last()];
   linear_interpolation(src.last(), src.first(), dst.slice(last_segment));
 }
+
+
 
 void interpolate_to_evaluated(const GSpan src,
                               const OffsetIndices<int> evaluated_offsets,

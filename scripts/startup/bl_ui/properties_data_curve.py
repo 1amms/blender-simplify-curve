@@ -125,14 +125,14 @@ class DATA_PT_shape_curve(CurveButtonsPanel, Panel):
                 sub.prop(curve, "resolution_u", text="Resolution Preview U")
 
                 sub = col.column(align=True)
-                sub.prop(curve, "render_resolution_u", text="Resolution Render U")
+                sub.prop(curve, "render_resolution_u", text="Render U")
 
             elif sampling_method == 'ADAPTIVE':
                 sub = col.column(align=True)
                 sub.prop(curve, "resolution_factor_u", text="Factor Preview U", slider=True)
 
                 sub = col.column(align=True)
-                sub.prop(curve, "render_resolution_factor_u", text="Factor Render U", slider=True)
+                sub.prop(curve, "render_resolution_factor_u", text="Render U", slider=True)
 
         col.separator()
 

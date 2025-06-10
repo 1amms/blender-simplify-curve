@@ -1584,7 +1584,7 @@ void BKE_nurb_makeCurve(const Nurb *nu,
   MEM_freeN(basisu);
 }
 
-uint BKE_curve_calc_coords_axis_len(const uint bezt_array_len,
+  uint BKE_curve_calc_coords_axis_len(const uint bezt_array_len,
                                     const uint resolu,
                                     const bool is_cyclic,
                                     const bool use_cyclic_duplicate_endpoint)

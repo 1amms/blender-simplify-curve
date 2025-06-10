@@ -104,6 +104,7 @@ set(SRC
   intern/curve_nurbs.cc
   intern/curve_poly.cc
   intern/curve_to_mesh_convert.cc
+  intern/curve_simplify.cc
   intern/curveprofile.cc
   intern/curves.cc
   intern/curves_attributes.cc

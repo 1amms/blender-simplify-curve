@@ -768,7 +768,8 @@ void calculate_evaluated_positions(Span<float3> positions,
                                    Span<float3> handles_left,
                                    Span<float3> handles_right,
                                    OffsetIndices<int> evaluated_offsets,
-                                   MutableSpan<float3> evaluated_positions);
+                                   MutableSpan<float3> evaluated_positions,
+                                   bool cyclic);
 
 /**
  * Evaluate generic data to the evaluated points, with counts for each segment described by

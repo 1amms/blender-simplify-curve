@@ -1753,7 +1753,7 @@ static void rna_def_curve(BlenderRNA *brna)
   RNA_def_property_float_sdna(prop, nullptr, "factu");
   RNA_def_property_clear_flag(prop, PROP_ANIMATABLE);
   RNA_def_property_range(prop, 0.0f, 5.0f); 
-  RNA_def_property_ui_range(prop, 0.0f, 5.0f, 0.1f, 2);
+  RNA_def_property_ui_range(prop, 0.0f, 5.0f, 0.001f, 3);
   RNA_def_property_ui_text(
       prop,
       "Factor U",
@@ -1786,7 +1786,7 @@ static void rna_def_curve(BlenderRNA *brna)
   RNA_def_property_float_sdna(prop, nullptr, "factu_ren");
   RNA_def_property_clear_flag(prop, PROP_ANIMATABLE);
   RNA_def_property_range(prop, 0.0f, 5.0f);
-  RNA_def_property_ui_range(prop, 0.0f, 5.0f, 0.1f, 2);
+  RNA_def_property_ui_range(prop, 0.0f, 5.0f, 0.001f, 3);
   RNA_def_property_ui_text(
       prop,
       "Render Factor U",

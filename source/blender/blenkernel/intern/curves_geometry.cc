@@ -33,6 +33,7 @@
 #include "BKE_bake_data_block_id.hh"
 #include "BKE_curves.hh"
 #include "BKE_curves_utils.hh"
+#include "BKE_curve_simplify.hh"
 #include "BKE_customdata.hh"
 #include "BKE_deform.hh"
 
@@ -792,11 +793,13 @@ void CurvesGeometry::ensure_nurbs_basis_cache() const
 Span<float3> CurvesGeometry::evaluated_positions() const
 {
   const CurvesGeometryRuntime &runtime = *this->runtime;
+
   if (this->is_single_type(CURVE_TYPE_POLY)) {
     runtime.evaluated_position_cache.ensure(
         [&](Vector<float3> &r_data) { r_data.clear_and_shrink(); });
     return this->positions();
   }
+
   this->ensure_nurbs_basis_cache();
   runtime.evaluated_position_cache.ensure([&](Vector<float3> &r_data) {
     r_data.resize(this->evaluated_points_num());
@@ -805,51 +808,81 @@ Span<float3> CurvesGeometry::evaluated_positions() const
     const OffsetIndices<int> points_by_curve = this->points_by_curve();
     const OffsetIndices<int> evaluated_points_by_curve = this->evaluated_points_by_curve();
     const Span<float3> positions = this->positions();
+    const VArray<bool> cyclic_flags = this->cyclic();
 
     auto evaluate_catmull = [&](const IndexMask &selection) {
-      const VArray<bool> cyclic = this->cyclic();
       const VArray<int> resolution = this->resolution();
       selection.foreach_index(GrainSize(128), [&](const int curve_index) {
         const IndexRange points = points_by_curve[curve_index];
         const IndexRange evaluated_points = evaluated_points_by_curve[curve_index];
         curves::catmull_rom::interpolate_to_evaluated(positions.slice(points),
-                                                      cyclic[curve_index],
+                                                      cyclic_flags[curve_index],
                                                       resolution[curve_index],
                                                       evaluated_positions.slice(evaluated_points));
       });
     };
+
     auto evaluate_poly = [&](const IndexMask &selection) {
       array_utils::copy_group_to_group(
           points_by_curve, evaluated_points_by_curve, selection, positions, evaluated_positions);
     };
+
     auto evaluate_bezier = [&](const IndexMask &selection) {
       const Span<float3> handle_positions_left = this->handle_positions_left();
       const Span<float3> handle_positions_right = this->handle_positions_right();
+
       if (handle_positions_left.is_empty() || handle_positions_right.is_empty()) {
         curves::fill_points(evaluated_points_by_curve, selection, float3(0), evaluated_positions);
         return;
       }
+
       const Span<int> all_bezier_offsets =
           runtime.evaluated_offsets_cache.data().all_bezier_offsets;
+
       selection.foreach_index(GrainSize(128), [&](const int curve_index) {
         const IndexRange points = points_by_curve[curve_index];
         const IndexRange evaluated_points = evaluated_points_by_curve[curve_index];
         const IndexRange offsets = curves::per_curve_point_offsets_range(points, curve_index);
+        const bool is_cyclic = cyclic_flags[curve_index];
+
+        // ✅ Call your curve_simplify helper for debugging purposes.
+        Array<bool> points_to_delete(points.size(), false);
+        blender::bke::curve_simplify(positions.slice(points), is_cyclic, 0.001f, points_to_delete);
+
+        int deleted = 0;
+        for (bool del : points_to_delete) {
+          if (del) {
+            deleted++;
+          }
+        }
+
+        printf(
+            "[evaluate_bezier] curve_index=%d: marked %d / %d points for deletion (cyclic=%d)\n",
+            curve_index,
+            deleted,
+            int(points.size()),
+            int(is_cyclic));
+
+        // Evaluate normally.
         curves::bezier::calculate_evaluated_positions(positions.slice(points),
                                                       handle_positions_left.slice(points),
                                                       handle_positions_right.slice(points),
                                                       all_bezier_offsets.slice(offsets),
-                                                      evaluated_positions.slice(evaluated_points));
+                                                      evaluated_positions.slice(evaluated_points),
+                                                      is_cyclic);
       });
     };
+
     auto evaluate_nurbs = [&](const IndexMask &selection) {
       this->ensure_nurbs_basis_cache();
       const VArray<int8_t> nurbs_orders = this->nurbs_orders();
       const Span<float> nurbs_weights = this->nurbs_weights();
       const Span<curves::nurbs::BasisCache> nurbs_basis_cache = runtime.nurbs_basis_cache.data();
+
       selection.foreach_index(GrainSize(128), [&](const int curve_index) {
         const IndexRange points = points_by_curve[curve_index];
         const IndexRange evaluated_points = evaluated_points_by_curve[curve_index];
+
         curves::nurbs::interpolate_to_evaluated(nurbs_basis_cache[curve_index],
                                                 nurbs_orders[curve_index],
                                                 nurbs_weights.slice_safe(points),
@@ -857,6 +890,7 @@ Span<float3> CurvesGeometry::evaluated_positions() const
                                                 evaluated_positions.slice(evaluated_points));
       });
     };
+
     curves::foreach_curve_by_type(this->curve_types(),
                                   this->curve_type_counts(),
                                   this->curves_range(),
@@ -865,8 +899,10 @@ Span<float3> CurvesGeometry::evaluated_positions() const
                                   evaluate_bezier,
                                   evaluate_nurbs);
   });
+
   return runtime.evaluated_position_cache.data();
 }
+
 
 Span<float3> CurvesGeometry::evaluated_tangents() const
 {
